@@ -161,10 +161,43 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	function action() {
+		checkMoves();
 		generateRandomNumber();
 		updateScore();
 		updateColor();
 		dataView();
+	}
+
+	function checkMoves() {
+		let check = 0;
+		for (let i = 0; i < 4 ; i++) {
+			for (let j = 0; j < 4 ; j++) {
+				if (data[i][j] === data[i][j + 1] || data[i][j] === 0) {
+					check = 1;
+				} 
+			}
+		}
+
+		let newArray = [[],[],[],[]];
+
+		for (let i = 0; i < 4; i++) {
+			for (let j = 0; j < 4; j++) {
+				newArray[j][i] = data[i][j];
+			}
+		}
+
+		for (let i = 0; i < 4 ; i++) {
+			for (let j = 0; j < 4 ; j++) {
+				if (newArray[i][j] === newArray[i][j + 1]  || data[i][j] === 0) {
+					check = 1;
+				} 
+			}
+		}
+
+		if (check === 0) {
+			gameOver = true;
+		}
+
 	}
 
 	function isGameOver() {
@@ -173,16 +206,19 @@ document.addEventListener("DOMContentLoaded", () => {
 		  }
 		  catch (e) {
 			if (e instanceof RangeError) {
-				const gameOverDisplay = document.querySelector('.gameover'),
-					  finalScore = document.querySelector('#score02'),
-					  restartGame = gameOverDisplay.querySelector('a');
 
-				gameOverDisplay.style.display = 'block';
-				finalScore.innerHTML = score;
-				restartGame.addEventListener('click', () => {
-					gameOverDisplay.style.display = 'none';
-					start();	
-				});
+				if (gameOver) {
+					const gameOverDisplay = document.querySelector('.gameover'),
+					finalScore = document.querySelector('#score02'),
+					restartGame = gameOverDisplay.querySelector('a');
+
+			 		gameOverDisplay.style.display = 'block';
+			 		finalScore.innerHTML = score;
+			 		restartGame.addEventListener('click', () => {
+				  	gameOverDisplay.style.display = 'none';
+				  	start();	
+			 		});
+				}
 			}
 		  }
 	}
