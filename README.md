@@ -2,4 +2,4 @@
 Trying selfskills in js by writing the 2048 game
 
 
-cloudy-language.surge.sh
+2048-js-game.surge.sh
