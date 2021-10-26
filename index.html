@@ -6,9 +6,13 @@
 	<link rel="stylesheet" href="/css/style.css">  
 </head>
 <body>
-	<div class="marg">
-		<p>SCORE:<span id="score01">0</span></p>    
-		<div class="main">                                              
+	<div class="game">
+		<p>SCORE:<span id="score01">0</span></p>
+		<label>
+			<input type="range" class="field_size__input" name="field_size__input" min="1" max="4" value="1">
+			<span class="field_size__output">4*4</span>
+		</label>
+		<div class="game_field">
 			<div class="cell"></div>
 			<div class="cell"></div>
 			<div class="cell"></div>
@@ -18,7 +22,7 @@
 			<div class="cell"></div>
 			<div class="cell"></div>
 			<div class="cell"></div>
-			
+
 			<div class="cell"></div>
 			<div class="cell"></div>
 			<div class="cell"></div>
@@ -29,14 +33,20 @@
 			<div class="cell"></div>
 			<div class="cell"></div>
 		</div>
-		<div class="gameover" id="gameover">                
+		<div class="game_over" id="game_over">
 			<div class="over">
 				<p>GAME OVER!!!</p>
 				<p>SCORE:<span id="score02"></span></p>
 				<a>try again!</a>
 			</div>
 		</div>
+		<div class="winning_game">
+			<div class="win">
+				<p>You win!!!</p>
+				<a>Continue</a>
+			</div>
+		</div>
 	</div>
-    <script src="/js/app.js"></script>  
+    <script src="/js/app.js"></script>
 </body>
 </html>

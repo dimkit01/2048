@@ -1,338 +1,393 @@
 document.addEventListener("DOMContentLoaded", () => {
-	let data = [
-		[0, 0, 0, 0],
-		[0, 0, 0, 0],
-		[0, 0, 0, 0],
-		[0, 0, 0, 0],
-		],
-		score = 0,
-		gameOver = false;
+    let data = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+    let score = 0;
+    let gameStatus = false;
+    let winStatus = false;
+    let fieldSize = 4;
+    let cells = document.querySelectorAll('.cell');
+    const gameField = document.querySelector('.game_field');
+    const input = document.querySelector(".field_size__input");
+    const output = document.querySelector(".field_size__output");
+    const winningBlock = document.querySelector('.winning_game');
+    const lostBlock = document.querySelector('.game_over');
+    const colors = ['n2', 'n4', 'n8', 'n16', 'n32', 'n64', 'n128', 'n256', 'n512', 'n1024', 'n2048', 'n4096', 'n8192', 'n9999'];
 
-	const cells = document.querySelectorAll('.cell');
-		
-	function start() {
-		score = 0;
-		updateScore();
-		gameOver = false;
-		data = [
-			[0, 0, 0, 0],
-			[0, 0, 0, 0],
-			[0, 0, 0, 0],
-			[0, 0, 0, 0],
-		];
-		
-		generateRandomNumber();
-		generateRandomNumber();
-		updateColor();
-		dataView();
-	}
-	start();
+    input.addEventListener("input", () => {
+        if (+input.value === 1) {
+            output.innerHTML = '4*4';
+            fieldSize = 4;
+            reloadGame();
+        } else if (+input.value === 2) {
+            output.innerHTML = '6*6';
+            fieldSize = 6;
+            reloadGame();
+        } else if (+input.value === 3) {
+            output.innerHTML = '8*8';
+            fieldSize = 8;
+            reloadGame();
+        } else if (+input.value === 4) {
+            output.innerHTML = '16*16';
+            fieldSize = 16;
+            reloadGame();
+        }
+    });
 
-	function generateRandomNumber() {
-		let num = Math.random() < 0.5 ? 2 : 4;
+    function reloadGame() {
+        score = 0;
+        updateScore();
+        createField();
+        dataFilling();
+        generateRandomNumber();
+        generateRandomNumber();
+        updateColor();
+        viewData();
+    }
 
-		let rand1 = Math.floor(Math.random() * (3 - 0 + 1)) + 0;
-		let rand2 = Math.floor(Math.random() * (3 - 0 + 1)) + 0;
+    function startField() {
+        generateRandomNumber();
+        generateRandomNumber();
+        updateColor();
+        viewData();
+    }
 
-		if (data[rand1][rand2] === 0) {
-			data[rand1][rand2] = num;
-		} else generateRandomNumber();
-	}
+    startField();
 
-	function dataView() {
-		cells.forEach((e, i) => {
-			e.innerHTML = data.flat()[i];
-		});
-	}
+    function viewData() {
+        cells.forEach((e, i) => {
+            e.innerHTML = `${data.flat()[i]}`;
+        });
+    }
 
-	// Moves 
+    function dataFilling() {
+        data = [];
+        for (let i = 0; i < fieldSize; i++) {
+            data.push([]);
 
-	function moveRight() {
-		for (let i = 0; i < data.length; i++) {
-			let values = data[i].filter(value => value);
-			for (let j = values.length - 1; j >= 0; j--) {
-				if (values[j] === values[j - 1]) {
-					values[j] = values[j] * 2;
-					score+= values[j];
-					values[j - 1] = 0; 
-				}
-			}
-			values = values.filter(value => value);
-			while (values.length !== 4) {
-				values.unshift(0);
-			}
-			data[i] = values;
-		}
+        }
+        for (let i = 0; i < fieldSize; i++) {
+            for (let j = 0; j < fieldSize; j++) {
+                data[i].push(0);
+            }
+        }
+    }
 
-		isGameOver();
-	}
+    function createField() {
+        gameField.innerHTML = '';
+        cells = [];
+        for (let i = 1; i <= fieldSize * fieldSize; i++) {
+            const div = document.createElement('div');
+            div.classList.add('cell');
+            gameField.append(div);
+            cells.push(div);
+            if (fieldSize !== 4) {
+                gameField.classList.add('big_game_field');
+            } else {
+                gameField.classList.remove('big_game_field');
+            }
 
-	function moveLeft() {
-		for (let i = 0; i < data.length; i++) {
-			let values = data[i].filter(value => value);
-			for (let j = 0; j <= values.length - 1; j++) {
-				if (values[j] === values[j + 1]) {
-					values[j] = values[j] * 2;
-					score+= values[j];
-					values[j + 1] = 0; 
-				}
-			}
-			values = values.filter(value => value);
-			while (values.length !== 4) {
-				values.push(0);
-			}
-			data[i] = values;
-		}
+            if (fieldSize === 8) {
+                div.style.width = '60px';
+                div.style.height = '60px';
+                div.style.margin = '13px 0 0 13px';
+                div.style.lineHeight = '60px';
+                div.style.fontSize = '25px';
+            } else if (fieldSize === 16) {
+                div.style.width = '32px';
+                div.style.height = '32px';
+                div.style.margin = '5px 0 0 5px';
+                div.style.lineHeight = '35px';
+                div.style.fontSize = '15px';
+            }
+        }
+    }
 
-		isGameOver();
-	}
+    function generateRandomNumber() {
+        let num = Math.random() < 0.5 ? 2 : 4;
 
-	function moveUp() {
-		let newArray = [[],[],[],[]];
+        let rand1 = Math.floor(Math.random() * fieldSize);
+        let rand2 = Math.floor(Math.random() * fieldSize);
 
-		for (let i = 0; i < 4; i++) {
-			for (let j = 0; j < 4; j++) {
-				newArray[j][i] = data[i][j];
-			}
-		}
+        if (data[rand1][rand2] === 0) {
+            data[rand1][rand2] = num;
+        } else generateRandomNumber();
+    }
 
-		for (let i = 0; i < newArray.length; i++) {
-			let values = newArray[i].filter(value => value);
-			for (let j = 0; j <= values.length - 1; j++) {
-				if (values[j] === values[j + 1]) {
-					values[j] = values[j] * 2;
-					score+= values[j];
-					values[j + 1] = 0; 
-				}
-			}
-			values = values.filter(value => value);
-			while (values.length !== 4) {
-				values.push(0);
-			}
-			newArray[i] = values;
-		}
+    function updateScore() {
+        const scoreWrapper = document.querySelector('#score01');
+        scoreWrapper.innerHTML = `${score}`;
+    }
 
-		for (let i = 0; i < 4; i++) {
-			for (let j = 0; j < 4; j++) {
-				data[j][i] = newArray[i][j];
-			}
-		}
+    function checkMoves(move) {
+        let dataClone = [].concat(data);
+        let check = false;
 
-		isGameOver();
-	}
+        move();
 
-	function moveDown() {
-		let newArray = [[],[],[],[]];
+        for (let i = 0; i < fieldSize; i++) {
+            for (let j = 0; j < fieldSize; j++) {
+                if (dataClone[i][j] !== data[i][j]) {
+                    check = true;
+                    break;
+                }
+            }
+        }
 
-		for (let i = 0; i < 4; i++) {
-			for (let j = 0; j < 4; j++) {
-				newArray[j][i] = data[i][j];
-			}
-		}
+        return check;
+    }
 
-		for (let i = 0; i < newArray.length; i++) {
-			let values = newArray[i].filter(value => value);
-			for (let j = values.length - 1; j >= 0; j--) {
-				if (values[j] === values[j - 1]) {
-					values[j] = values[j] * 2;
-					score+= values[j];
-					values[j - 1] = 0; 
-				}
-			}
-			values = values.filter(value => value);
-			while (values.length !== 4) {
-				values.unshift(0);
-			}
-			newArray[i] = values;
-		}
+    function isGameWinning() {
+        const winButton = winningBlock.querySelector('a');
+        data.flat().forEach((e) => {
+            if (e === 2048) {
+                winningBlock.style.display = 'block';
+                winStatus = true;
+            }
+        })
+        winButton.addEventListener('click', () => {
+            winningBlock.style.display = 'none';
+        })
+        winButton.addEventListener('touchend', () => {
+            winningBlock.style.display = 'none';
+        })
+    }
 
-		for (let i = 0; i < 4; i++) {
-			for (let j = 0; j < 4; j++) {
-				data[j][i] = newArray[i][j];
-			}
-		}
+    function checkColumnNeighbors() {
+        for (let i = 0; i < fieldSize - 1; i++) {
+            for (let j = 0; j < fieldSize; j++) {
+                if (data[i][j] === data[i + 1][j]) {
+                    gameStatus = false;
+                    break;
+                }
+            }
+        }
+    }
 
-		isGameOver();
-	}
+    function checkRowsNeighbor() {
+        for (let i = 0; i < fieldSize; i++) {
+            for (let j = 0; j < fieldSize - 1; j++) {
+                if (data[i][j] === data[i][j + 1]) {
+                    gameStatus = false;
+                    break;
+                }
+            }
+        }
+    }
 
-	function updateScore() {
-		const scoreWrapper = document.querySelector('#score01');
-		scoreWrapper.innerHTML = score;
-	}
+    function checkByZero() {
+        data.flat().forEach((e) => {
+            if (e === 0) {
+                gameStatus = false;
+            }
+        })
+    }
 
-	function action() {
-		checkMoves();
-		generateRandomNumber();
-		updateScore();
-		updateColor();
-		dataView();
-	}
+    function isGameOver() {
+        gameStatus = true;
+        checkRowsNeighbor();
+        checkColumnNeighbors();
+        checkByZero();
 
-	function checkMoves() {
-		let check = 0;
-		for (let i = 0; i < 4 ; i++) {
-			for (let j = 0; j < 4 ; j++) {
-				if (data[i][j] === data[i][j + 1] || data[i][j] === 0) {
-					check = 1;
-				} 
-			}
-		}
+        if (gameStatus) {
+            lostBlock.style.display = 'block';
+            const loseButton = lostBlock.querySelector('a');
+            const loseScore = lostBlock.querySelector('#score02')
+            loseScore.innerHTML = `${score}`;
+            loseButton.addEventListener('click', () => {
+                lostBlock.style.display = 'none';
+                reloadGame();
+            })
+            loseButton.addEventListener('touchend', () => {
+                lostBlock.style.display = 'none';
+                reloadGame();
+            })
+        }
 
-		let newArray = [[],[],[],[]];
+    }
 
-		for (let i = 0; i < 4; i++) {
-			for (let j = 0; j < 4; j++) {
-				newArray[j][i] = data[i][j];
-			}
-		}
+    function action() {
+        updateScore();
+        generateRandomNumber();
+        updateColor();
+        viewData();
+        isGameOver();
+        if (!winStatus) {
+            isGameWinning();
+        }
+    }
 
-		for (let i = 0; i < 4 ; i++) {
-			for (let j = 0; j < 4 ; j++) {
-				if (newArray[i][j] === newArray[i][j + 1]  || data[i][j] === 0) {
-					check = 1;
-				} 
-			}
-		}
+    function updateColor() {
+        let newArray = data.flat();
+        newArray.forEach((e, i) => {
+            cells[i].classList.remove(...colors);
+            if (e > 8192) {
+                cells[i].classList.add('n9999');
+            } else {
+                cells[i].classList.add(`n${e}`);
+            }
+        });
+    }
 
-		if (check === 0) {
-			gameOver = true;
-		}
 
-	}
+    // Movements
 
-	function isGameOver() {
-		try {
-			action();
-		  }
-		  catch (e) {
-			if (e instanceof RangeError) {
+    function moveRight() {
+        for (let i = 0; i < data.length; i++) {
+            let values = data[i].filter(value => value > 0);
+            for (let j = values.length - 1; j >= 0; j--) {
+                if (values[j] === values[j - 1]) {
+                    values[j] = values[j] * 2;
+                    score += values[j];
+                    values[j - 1] = 0;
+                }
+            }
+            values = values.filter(value => value > 0);
+            while (values.length !== fieldSize) {
+                values.unshift(0);
+            }
+            data[i] = values;
+        }
+    }
 
-				if (gameOver) {
-					const gameOverDisplay = document.querySelector('.gameover'),
-					finalScore = document.querySelector('#score02'),
-					restartGame = gameOverDisplay.querySelector('a');
+    function moveLeft() {
+        for (let i = 0; i < data.length; i++) {
+            let values = data[i].filter(value => value > 0);
+            for (let j = 0; j <= values.length - 1; j++) {
+                if (values[j] === values[j + 1]) {
+                    values[j] = values[j] * 2;
+                    score += values[j];
+                    values[j + 1] = 0;
+                }
+            }
+            values = values.filter(value => value > 0);
+            while (values.length !== fieldSize) {
+                values.push(0);
+            }
+            data[i] = values;
+        }
+    }
 
-			 		gameOverDisplay.style.display = 'block';
-			 		finalScore.innerHTML = score;
-			 		restartGame.addEventListener('click', () => {
-				  		gameOverDisplay.style.display = 'none';
-				  		start();	
-			 		});
-					restartGame.addEventListener("touchend", () => {
-						gameOverDisplay.style.display = 'none';
-				  		start();
-					}, false);
-				}
-			}
-		  }
-	}
+    function transpose(array) {
+        let copy = [];
+        for (let i = 0; i < array.length; ++i) {
+            for (let j = 0; j < array[i].length; ++j) {
+                if (copy[j] === undefined) copy[j] = [];
+                copy[j][i] = array[i][j];
+            }
+        }
+        return copy;
+    }
 
-	function updateColor() {
-		let newArray = data.flat();
-		newArray.forEach((e,i) => {
-			if (e === 0){
-				cells[i].classList.remove('n2','n4','n8','n16','n32','n64','n128','n256','n512','n1024','n2048','n4096','n8192');
-				cells[i].classList.add('n0');
-			} else if (e === 2) {
-				cells[i].classList.remove('n0','n4','n8','n16','n32','n64','n128','n256','n512','n1024','n2048','n4096','n8192');
-				cells[i].classList.add('n2');
-			} else if (e === 4) {
-				cells[i].classList.remove('n0','n2','n4','n8','n16','n32','n64','n128','n256','n512','n1024','n2048','n4096','n8192');
-				cells[i].classList.add('n4');
-			} else if (e === 8) {
-				cells[i].classList.remove('n0','n2','n4','n8','n16','n32','n64','n128','n256','n512','n1024','n2048','n4096','n8192');
-				cells[i].classList.add('n8');
-			} else if (e === 16) {
-				cells[i].classList.remove('n0','n2','n4','n8','n16','n32','n64','n128','n256','n512','n1024','n2048','n4096','n8192');
-				cells[i].classList.add('n16');
-			} else if (e === 32) {
-				cells[i].classList.remove('n0','n2','n4','n8','n16','n32','n64','n128','n256','n512','n1024','n2048','n4096','n8192');
-				cells[i].classList.add('n32');
-			} else if (e === 64) {
-				cells[i].classList.remove('n0','n2','n4','n8','n16','n32','n64','n128','n256','n512','n1024','n2048','n4096','n8192');
-				cells[i].classList.add('n64');
-			} else if (e === 128) {
-				cells[i].classList.remove('n0','n2','n4','n8','n16','n32','n64','n128','n256','n512','n1024','n2048','n4096','n8192');
-				cells[i].classList.add('n128');
-			} else if (e === 256) {
-				cells[i].classList.remove('n0','n2','n4','n8','n16','n32','n64','n128','n256','n512','n1024','n2048','n4096','n8192');
-				cells[i].classList.add('n256');
-			} else if (e === 512) {
-				cells[i].classList.remove('n0','n2','n4','n8','n16','n32','n64','n128','n256','n512','n1024','n2048','n4096','n8192');
-				cells[i].classList.add('n512');
-			} else if (e === 1024) {
-				cells[i].classList.remove('n0','n2','n4','n8','n16','n32','n64','n128','n256','n512','n1024','n2048','n4096','n8192');
-				cells[i].classList.add('n1024');
-			} else if (e === 2048) {
-				cells[i].classList.remove('n0','n2','n4','n8','n16','n32','n64','n128','n256','n512','n1024','n2048','n4096','n8192');
-				cells[i].classList.add('n2048');
-			} else if (e === 4096) {
-				cells[i].classList.remove('n0','n2','n4','n8','n16','n32','n64','n128','n256','n512','n1024','n2048','n4096','n8192');
-				cells[i].classList.add('n4096');
-			} else if (e === 8192) {
-				cells[i].classList.remove('n0','n2','n4','n8','n16','n32','n64','n128','n256','n512','n1024','n2048','n4096','n8192');
-				cells[i].classList.add('n8192');
-			}
-		});
-	}
-	// Keys events
 
-	document.onkeydown = checkKey;
+    function moveUp() {
+        let newArray = transpose(data);
 
-	function checkKey(e) {
-	
-		e = e || window.event;
-	
-		if (e.keyCode === 38) {
-			moveUp();
-		}
-		else if (e.keyCode === 40) {
-			moveDown();
-		}
-		else if (e.keyCode === 37) {
-		   moveLeft();
-		}
-		else if (e.keyCode === 39) {
-		   moveRight();
-		}
-	
-	}
+        for (let i = 0; i < newArray.length; i++) {
+            let values = newArray[i].filter(value => value > 0);
+            for (let j = 0; j <= values.length - 1; j++) {
+                if (values[j] === values[j + 1]) {
+                    values[j] = values[j] * 2;
+                    score += values[j];
+                    values[j + 1] = 0;
+                }
+            }
+            values = values.filter(value => value > 0);
+            while (values.length !== fieldSize) {
+                values.push(0);
+            }
+            newArray[i] = values;
+        }
 
-	// Touch events
+        data = transpose(newArray);
+    }
 
-	let initialPoint;
-	let finalPoint;
-	document.addEventListener('touchstart', function(event) {
-	event.preventDefault();
-	event.stopPropagation();
-	initialPoint=event.changedTouches[0];
-	}, false);
-	document.addEventListener('touchend', function(event) {
-	event.preventDefault();
-	event.stopPropagation();
-	finalPoint=event.changedTouches[0];
-	var xAbs = Math.abs(initialPoint.pageX - finalPoint.pageX);
-	var yAbs = Math.abs(initialPoint.pageY - finalPoint.pageY);
-	if (xAbs > 20 || yAbs > 20) {
-	if (xAbs > yAbs) {
-	if (finalPoint.pageX < initialPoint.pageX){
-	/*СВАЙП ВЛЕВО*/
-		moveLeft();
-	} else{
-	/*СВАЙП ВПРАВО*/
-		moveRight();	
-	}
-	}
-	else {
-	if (finalPoint.pageY < initialPoint.pageY){
-	/*СВАЙП ВВЕРХ*/
-		moveUp();
-	}
-	else{
-	/*СВАЙП ВНИЗ*/
-		moveDown();
-	}
-	}
-	}
-	}, false);
+
+    function moveDown() {
+        let newArray = transpose(data);
+
+        for (let i = 0; i < newArray.length; i++) {
+            let values = newArray[i].filter(value => value > 0);
+            for (let j = values.length - 1; j >= 0; j--) {
+                if (values[j] === values[j - 1]) {
+                    values[j] = values[j] * 2;
+                    score += values[j];
+                    values[j - 1] = 0;
+                }
+            }
+            values = values.filter(value => value > 0);
+            while (values.length !== fieldSize) {
+                values.unshift(0);
+            }
+            newArray[i] = values;
+        }
+
+        data = transpose(newArray);
+    }
+
+
+    // Keys events
+
+    document.addEventListener('keyup', (e) => {
+        if (e.key === 'ArrowUp') {
+            if (checkMoves(moveUp)) {
+                action();
+            }
+        } else if (e.key === 'ArrowDown') {
+            if (checkMoves(moveDown)) {
+                action();
+            }
+        } else if (e.key === 'ArrowLeft') {
+            if (checkMoves(moveLeft)) {
+                action();
+            }
+        } else if (e.key === 'ArrowRight') {
+            if (checkMoves(moveRight)) {
+                action();
+            }
+        }
+    });
+
+    // Touch events
+
+    let initialPoint;
+    let finalPoint;
+    document.addEventListener('touchstart', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        initialPoint = event.changedTouches[0];
+    }, false);
+    document.addEventListener('touchend', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        finalPoint = event.changedTouches[0];
+        let xAbs = Math.abs(initialPoint.pageX - finalPoint.pageX);
+        let yAbs = Math.abs(initialPoint.pageY - finalPoint.pageY);
+        if (xAbs > 20 || yAbs > 20) {
+            if (xAbs > yAbs) {
+                if (finalPoint.pageX < initialPoint.pageX) {
+                    /*СВАЙП ВЛЕВО*/
+                    if (checkMoves(moveLeft)) {
+                        action();
+                    }
+                } else {
+                    /*СВАЙП ВПРАВО*/
+                    if (checkMoves(moveRight)) {
+                        action();
+                    }
+                }
+            } else {
+                if (finalPoint.pageY < initialPoint.pageY) {
+                    /*СВАЙП ВВЕРХ*/
+                    if (checkMoves(moveUp)) {
+                        action();
+                    }
+                } else {
+                    /*СВАЙП ВНИЗ*/
+                    if (checkMoves(moveDown)) {
+                        action();
+                    }
+                }
+            }
+        }
+    }, false);
+
 });
